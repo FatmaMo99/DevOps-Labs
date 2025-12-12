@@ -1,11 +1,4 @@
-#####################################
-#                                   #
-#  @author      : 00xWolf           #
-#    GitHub    : @mmsaeed509       #
-#    Developer : Mahmoud Mohamed   #
-#  﫥  Copyright : Mahmoud Mohamed   #
-#                                   #
-#####################################
+
 
 # Use an official, minimized Python base image #
 FROM python:3.11-slim
