@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-deployment
+  labels:
+    app: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      # Service account with SCC binding
+      serviceAccountName: three-tier-app-sa
+      # Allow root access
+      securityContext:
+        runAsUser: 0  # Root user
+        fsGroup: 0
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        # Container security context for root access
+        securityContext:
+          runAsUser: 0  # Root user
+          seccompProfile:
+            type: RuntimeDefault
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        - name: MYSQL_DATABASE
+          value: "example"
+        - name: MYSQL_USER
+          value: "appuser"
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        ports:
+        - containerPort: 3306
+          protocol: TCP
+        volumeMounts:
+        - name: db-storage
+          mountPath: /var/lib/mysql
+        # Health checks
+        livenessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - -h
+            - localhost
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - mysql
+            - -h
+            - localhost
+            - -e
+            - SELECT 1
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+        # Resource limits
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: db-storage
+        persistentVolumeClaim:
+          claimName: db-data-pvc
