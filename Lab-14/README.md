@@ -1,79 +1,47 @@
-# Lab-14
+# ⚖️ Lab 14: Resource Limits & Scheduled Tasks in OpenShift
 
-### Create a New Project
+Master resource governance using **LimitRanges** and automate operations with **CronJobs**.
 
-```bash
-oc new-project limitrange-lab
-```
+## 🛡️ Task 1: Resource Governance (LimitRange)
+Ensure your cluster remains stable by enforcing CPU and Memory boundaries for all pods in the project.
 
-### Define a LimitRange
-
+### 1. Apply the Limits
 ```bash
 oc create limitrange pod-limit-range \
   --max=cpu=1,memory=1Gi \
   --min=cpu=100m,memory=128Mi \
   --default=cpu=500m,memory=512Mi \
   --default-request=cpu=200m,memory=256Mi \
-  --type=Pod \
-  -n limitrange-lab
+  --type=Pod
 ```
 
-### Verify the LimitRange
-
+### 2. Verify Enforcement
+Deploy a test pod to see the limits auto-applied:
 ```bash
-oc get limitrange -n limitrange-lab
-oc describe limitrange pod-limit-range -n limitrange-lab
+oc run nginx-test-pod --image=nginx:latest --port=80
+oc describe pod nginx-test-pod | grep Limits -A 5
 ```
 
-### Test with a Pod
+---
 
-```bash
-oc run nginx-test-pod --image=nginx:latest --port=80 -n limitrange-lab
-oc describe pod nginx-test-pod -n limitrange-lab
-```
+## ⏰ Task 2: Automation (CronJobs)
+Set up a recurring task that runs every minute.
 
-### Create a CronJob
-
+### 1. Create the CronJob
 ```bash
 oc create cronjob scheduled-task \
   --image=busybox:latest \
   --schedule="* * * * *" \
   --restart=OnFailure \
-  -n limitrange-lab \
   -- /bin/sh -c 'echo "Task executed at $(date)"'
 ```
 
-### Verify the CronJob
-
+### 2. Monitor Execution
 ```bash
-oc get cronjobs -n limitrange-lab
-oc describe cronjob scheduled-task -n limitrange-lab
-oc get jobs -n limitrange-lab
+oc get cronjobs
+oc get jobs    # View historical runs
+oc logs job/<JOB_NAME>
 ```
 
-### View Job Logs
-
-```bash
-oc get jobs -n limitrange-lab
-
-oc logs job/<JOB_NAME> -n limitrange-lab
-```
-
-### Verify (For Screenshots)
-
-```bash
-oc describe limitrange pod-limit-range -n limitrange-lab
-
-oc describe pod nginx-test-pod -n limitrange-lab
-
-oc get cronjobs -n limitrange-lab
-oc get jobs -n limitrange-lab
-
-oc logs job/<JOB_NAME> -n limitrange-lab
-```
-
-### Cleanup
-
-```bash
-oc delete project limitrange-lab
-```
+---
+*Clean up the environment:* `oc delete project limitrange-lab`

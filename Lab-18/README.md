@@ -1,90 +1,37 @@
-<h1 align="center"> Deploying EC2 Instances Behind an Application Load Balancer </h1>
+# ⚖️ Lab 18: Scalable AWS Infrastructure with Terraform
 
-<p align="center">
-  <img src="./imgs/1.png" />
-<p/>
+Deploy a high-availability architecture featuring EC2 instances distributed across availability zones, managed by an **Application Load Balancer (ALB)**.
 
----
+## 📐 Architecture
+- **ALB**: Entry point, distributes traffic.
+- **EC2**: Multiple workers running the application.
+- **VPC**: Isolated networking.
 
-### Initialize Terraform
+## 🚀 Execution Workflow
 
+### 1. Initialization
 ```bash
 cd tf
 terraform init
 terraform validate
 ```
 
-### Plan the Deployment
-
+### 2. Infrastructure Plan
 ```bash
-terraform fmt
 terraform plan
 ```
 
-### Deploy the Infrastructure
-
+### 3. Deploy
 ```bash
-terraform apply
-# or 
 terraform apply -auto-approve
 ```
 
-### Access the Application
-
-Get the ALB URL
-
+## ✅ Access & Test
+Retrieve the Load Balancer URL and test the connection:
 ```bash
 terraform output alb_url
-```
-
-```bash
-"http://k21-alb-lab-alb-2056889224.us-east-1.elb.amazonaws.com"
-```
-Test the application
-
-```bash
-curl http://k21-alb-lab-alb-2056889224.us-east-1.elb.amazonaws.com
-
+curl $(terraform output -raw alb_url)
 ```
 
 ---
-
-### Project Structure
-
-```
-Lab-18/
-├── README.md              # Lab overview and objectives
-├── imgs/                  # Architecture diagrams
-│   └── 1.png             # Lab architecture diagram
-└── tf/                    # Terraform configuration
-    ├── main.tf           # Provider configuration
-    ├── variables.tf      # Input variables
-    ├── vpc.tf            # VPC and networking
-    ├── security_groups.tf # Security groups
-    ├── ec2.tf            # EC2 instances
-    ├── alb.tf            # Application Load Balancer
-    ├── outputs.tf        # Output values
-    ├── terraform.tfvars  # Variable values
-    ├── user-data.sh      # EC2 initialization script
-    └── .gitignore        # Git ignore rules
-```
-
----
-
-
-### Clean Up
-
-```bash
-terraform destroy
-# or 
-terraform destroy -auto-approve
-```
-
----
-
-
-<p align="center">
-  <img src="./imgs/2.png" />
-  <img src="./imgs/3.png" />
-  <img src="./imgs/4.png" />
-<p/>
+*Cleanup:* `terraform destroy -auto-approve`
